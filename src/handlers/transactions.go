@@ -5,12 +5,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/valiant1012/transaction-service/src/core"
+	"github.com/valiant1012/transaction-service/src/utility/logger"
 )
 
 type TransactionHandler struct{}
 
+// CreateTransaction creates a new transaction and auto-assigns an ID to it. Returns the transaction object as response.
 func (t *TransactionHandler) CreateTransaction(c *gin.Context) {
-	var transactionObject core.TransactionRequest
+	var transactionObject core.TransactionRequestBody
 	err := c.Bind(&transactionObject)
 	if err != nil {
 		ResponseBadRequestWithMessage(c, "invalid body")
@@ -29,9 +31,13 @@ func (t *TransactionHandler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
+	logger.Infoln("created a new transaction with ID", transaction.ID)
+
 	ResponseOKWithPayload(c, transaction)
 }
 
+// CreateTransactionWithID creates a transaction with a pre-defined ID. Returns the transaction object as response.
+// This will generate a new ID if there is any collision with existing transaction IDs
 func (t *TransactionHandler) CreateTransactionWithID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -39,7 +45,7 @@ func (t *TransactionHandler) CreateTransactionWithID(c *gin.Context) {
 		return
 	}
 
-	var transactionObject core.TransactionRequest
+	var transactionObject core.TransactionRequestBody
 	err = c.Bind(&transactionObject)
 	if err != nil {
 		ResponseBadRequestWithMessage(c, "invalid body")
@@ -59,9 +65,12 @@ func (t *TransactionHandler) CreateTransactionWithID(c *gin.Context) {
 		return
 	}
 
+	logger.Infoln("created a new transaction with requested ID:", id, "and allocated ID:", transaction.ID)
+
 	ResponseOKWithPayload(c, transaction)
 }
 
+// GetTransactionByID Returns the transaction object with required ID as response.
 func (t *TransactionHandler) GetTransactionByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -82,6 +91,7 @@ func (t *TransactionHandler) GetTransactionByID(c *gin.Context) {
 	ResponseOKWithPayload(c, transaction)
 }
 
+// GetTransactionIDsByType Returns all transaction IDs matching the required `type`
 func (t *TransactionHandler) GetTransactionIDsByType(c *gin.Context) {
 	transactionType := c.Param("type")
 
@@ -94,6 +104,7 @@ func (t *TransactionHandler) GetTransactionIDsByType(c *gin.Context) {
 	ResponseOKWithPayload(c, transactionIDs)
 }
 
+// GetTransactionCumulativeAmount returns recursive cumulative sum of all transactions linked to a given transaction ID
 func (t *TransactionHandler) GetTransactionCumulativeAmount(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -101,7 +112,7 @@ func (t *TransactionHandler) GetTransactionCumulativeAmount(c *gin.Context) {
 		return
 	}
 
-	sum, err := core.GetCumulativeSumByParentID(c.Request.Context(), id)
+	sum, err := core.GetCumulativeSumByParentTransactionID(c.Request.Context(), id)
 	if err != nil {
 		ResponseServerErrorWithMessage(c, err.Error())
 		return

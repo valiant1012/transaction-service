@@ -2,6 +2,7 @@ package config
 
 import (
 	"cmp"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -11,16 +12,18 @@ var (
 )
 
 type Env struct {
-	Type     string       `mapstructure:"type"`
-	Version  string       `mapstructure:"version"`
-	Port     string       `mapstructure:"port"`
-	LogFiles LogFilePaths `mapstructure:"log_files"`
-	Database DBConfig     `mapstructure:"database"`
+	Type          string       `mapstructure:"type"`
+	Version       string       `mapstructure:"version"`
+	Port          string       `mapstructure:"port"`
+	JWTSigningKey string       `mapstructure:"jwt_signing_key"`
+	LogFiles      LogFilePaths `mapstructure:"log_files"`
+	Database      DBConfig     `mapstructure:"database"`
 }
 
 type LogFilePaths struct {
 	GinLogger    string `mapstructure:"gin_standard"`
 	GinErrLogger string `mapstructure:"gin_err_logger"`
+	ServerLogger string `mapstructure:"server_logger"`
 }
 
 type DBConfig struct {
@@ -65,12 +68,20 @@ func GetPort() string {
 	return env.Port
 }
 
+func GetJWTSigningKey() string {
+	return env.JWTSigningKey
+}
+
 func GetGinLogFilePath() string {
 	return cmp.Or(env.LogFiles.GinLogger, "logs/gin.log")
 }
 
 func GetGinErrLogFilePath() string {
 	return cmp.Or(env.LogFiles.GinErrLogger, "logs/gin.error.log")
+}
+
+func GetServerLogFilePath() string {
+	return cmp.Or(env.LogFiles.ServerLogger, "logs/server.log")
 }
 
 func GetPostgresConfig() Postgres {

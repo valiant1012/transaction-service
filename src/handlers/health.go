@@ -7,7 +7,8 @@ import (
 
 type HealthHandler struct{}
 
-func (h *HealthHandler) Health(c *gin.Context) {
+// HealthCheck route for service monitoring
+func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	ResponseOKWithPayload(c, gin.H{
 		"message": "service is up!",
 		"version": config.GetVersion(),

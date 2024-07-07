@@ -12,11 +12,16 @@ const (
 	TransactionColumnID = "id"
 )
 
+// Transaction model represents transactions table in the DB, with required fields
 type Transaction struct {
-	ID           int64         `gorm:"column:id;primaryKey;" json:"id"`
-	Amount       float64       `gorm:"column:amount;" json:"amount"`
-	Type         string        `gorm:"column:type;" json:"type"`
-	ParentID     *int64        `gorm:"column:parent_id;index;" json:"parent_id,omitempty"`
+	ID     int64   `gorm:"column:id;primaryKey;" json:"id"`
+	Amount float64 `gorm:"column:amount;" json:"amount"`
+	Type   string  `gorm:"column:type;" json:"type"`
+
+	// ParentID is a foreign key to keep track of parent transactions
+	ParentID *int64 `gorm:"column:parent_id;index;" json:"parent_id,omitempty"`
+
+	// Transactions is a self reference to build a recursive and hierarchical relationship between transactions.
 	Transactions []Transaction `gorm:"foreignKey:parent_id;references:id" json:"-"`
 
 	// Timestamps
@@ -73,18 +78,19 @@ func GetTransactionsAmountSumByParentId(ctx context.Context, rootId int64) (Tran
 	return transactions, nil
 }
 
-func GetTransactionSum(ctx context.Context, parentID int64) (float64, error) {
+func GetCumulativeTransactionSumForParentID(ctx context.Context, parentID int64) (float64, error) {
 	var transactions []Transaction
-	err := DB().WithContext(ctx).Raw(
-		`WITH RECURSIVE transaction_tree AS (
+	// Recursive expression to build a tree like structure of transactions linked by their parent_id
+	result := DB().WithContext(ctx).Raw(`
+		WITH RECURSIVE transaction_tree AS (
 			SELECT id, amount, parent_id FROM transactions WHERE id = ?  
-			UNION ALL
+				UNION ALL
 			SELECT t.id, t.amount, t.parent_id FROM transactions t INNER JOIN transaction_tree tt ON t.parent_id = tt.id
 		)
-		SELECT * FROM transaction_tree
-	`, parentID).Scan(&transactions).Error
-	if err != nil {
-		return 0, err
+		SELECT * FROM transaction_tree;
+	`, parentID).Scan(&transactions)
+	if result.Error != nil {
+		return 0, result.Error
 	}
 
 	var sum float64

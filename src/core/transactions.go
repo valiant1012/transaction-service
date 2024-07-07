@@ -7,21 +7,21 @@ import (
 	"github.com/valiant1012/transaction-service/src/models/postgres"
 )
 
-type TransactionRequest struct {
+type TransactionRequestBody struct {
 	ID       int64   `json:"-"`
 	Amount   float64 `json:"amount"`
 	Type     string  `json:"type"`
 	ParentId *int64  `json:"parent_id,omitempty"`
 }
 
-func (t *TransactionRequest) Validate() error {
+func (t *TransactionRequestBody) Validate() error {
 	if t.Type == "" {
 		return errors.New("missing transaction type")
 	}
 	return nil
 }
 
-func CreateTransaction(ctx context.Context, transactionRequest TransactionRequest) (postgres.Transaction, error) {
+func CreateTransaction(ctx context.Context, transactionRequest TransactionRequestBody) (postgres.Transaction, error) {
 	transaction := postgres.Transaction{
 		Amount:   transactionRequest.Amount,
 		Type:     transactionRequest.Type,
@@ -49,8 +49,8 @@ func GetTransactionByType(ctx context.Context, transactionType string) ([]int64,
 	return transactionIDs, nil
 }
 
-func GetCumulativeSumByParentID(ctx context.Context, parentID int64) (float64, error) {
-	sum, err := postgres.GetTransactionSum(ctx, parentID)
+func GetCumulativeSumByParentTransactionID(ctx context.Context, parentID int64) (float64, error) {
+	sum, err := postgres.GetCumulativeTransactionSumForParentID(ctx, parentID)
 	if err != nil {
 		return 0, errors.Wrap(err, "get transactions")
 	}

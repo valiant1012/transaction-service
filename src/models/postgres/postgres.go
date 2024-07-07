@@ -3,11 +3,13 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/valiant1012/transaction-service/src/config"
+	"github.com/valiant1012/transaction-service/src/utility/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
 var db *gorm.DB
@@ -36,7 +38,8 @@ func Connect() error {
 	defer cancel()
 	err = AutoMigrate(ctx)
 	if err != nil {
-		fmt.Println("Auto Migrate Error:", err.Error())
+		logger.Errorln("Auto Migrate Error:", err.Error())
+		// can panic if needed
 	}
 
 	return nil
