@@ -11,15 +11,29 @@ var (
 )
 
 type Env struct {
-	Type     string       `json:"type"`
-	Version  string       `json:"version"`
-	Port     string       `json:"port"`
-	LogFiles LogFilePaths `json:"log_files"`
+	Type     string       `mapstructure:"type"`
+	Version  string       `mapstructure:"version"`
+	Port     string       `mapstructure:"port"`
+	LogFiles LogFilePaths `mapstructure:"log_files"`
+	Database DBConfig     `mapstructure:"database"`
 }
 
 type LogFilePaths struct {
-	GinLogger    string `json:"gin_standard"`
-	GinErrLogger string `json:"gin_err_logger"`
+	GinLogger    string `mapstructure:"gin_standard"`
+	GinErrLogger string `mapstructure:"gin_err_logger"`
+}
+
+type DBConfig struct {
+	Postgres Postgres `mapstructure:"postgres"`
+}
+
+type Postgres struct {
+	DBName   string `mapstructure:"db_name"`
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	SSLMode  string `mapstructure:"sslmode"`
 }
 
 func Init(configLocation string) {
@@ -33,6 +47,10 @@ func Init(configLocation string) {
 	if err != nil {
 		panic(errors.Wrap(err, "could not unmarshal env file"))
 	}
+}
+
+func GetVar(v string) any {
+	return viper.Get(v)
 }
 
 func GetEnvType() string {
@@ -53,4 +71,8 @@ func GetGinLogFilePath() string {
 
 func GetGinErrLogFilePath() string {
 	return cmp.Or(env.LogFiles.GinErrLogger, "logs/gin.error.log")
+}
+
+func GetPostgresConfig() Postgres {
+	return env.Database.Postgres
 }

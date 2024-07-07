@@ -10,5 +10,8 @@ func AddRoutes(e *gin.Engine) {
 
 	transactionHandler := handlers.TransactionHandler{}
 
-	v1.GET("/transaction-service/transaction/:id", transactionHandler.GetTransaction)
+	v1.POST("/transactionservice/transaction", transactionHandler.CreateTransaction)
+	v1.PUT("/transactionservice/transaction/:id", transactionHandler.CreateTransactionWithID)
+	v1.GET("/transactionservice/transaction/:id", transactionHandler.GetTransactionByID)
+	v1.GET("/transactionservice/types/:type", transactionHandler.GetTransactionIDsByType)
 }

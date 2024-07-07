@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
-
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/valiant1012/transaction-service/src/config"
+	"github.com/valiant1012/transaction-service/src/constants"
+	"github.com/valiant1012/transaction-service/src/models/postgres"
 	"github.com/valiant1012/transaction-service/src/server/middlewares"
 	"github.com/valiant1012/transaction-service/src/server/routers"
 )
@@ -17,6 +19,17 @@ func main() {
 	// Initialize config
 	config.Init(*configLocation)
 
+	// Set release mode if production
+	if config.GetEnvType() == constants.EnvProduction {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	// Init Services
+	err := initServices()
+	if err != nil {
+		panic(errors.Wrap(err, "init services"))
+	}
+
 	// Initialize gin engine & attach middlewares
 	engine := gin.New()
 	engine.SetTrustedProxies(nil)
@@ -28,7 +41,16 @@ func main() {
 	routers.AddRoutes(engine)
 
 	// Run gin engine
-	if err := engine.Run(config.GetPort()); err != nil {
+	if err = engine.Run(config.GetPort()); err != nil {
 		panic(err)
 	}
+}
+
+func initServices() error {
+	err := postgres.Connect()
+	if err != nil {
+		return errors.Wrap(err, "connect postgres")
+	}
+
+	return nil
 }
