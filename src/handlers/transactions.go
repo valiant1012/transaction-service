@@ -95,5 +95,17 @@ func (t *TransactionHandler) GetTransactionIDsByType(c *gin.Context) {
 }
 
 func (t *TransactionHandler) GetTransactionCumulativeAmount(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		ResponseBadRequestWithMessage(c, "invalid ID")
+		return
+	}
 
+	sum, err := core.GetCumulativeSumByParentID(c.Request.Context(), id)
+	if err != nil {
+		ResponseServerErrorWithMessage(c, err.Error())
+		return
+	}
+
+	ResponseOKWithPayload(c, gin.H{"sum": sum})
 }

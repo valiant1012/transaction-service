@@ -14,4 +14,5 @@ func AddRoutes(e *gin.Engine) {
 	v1.PUT("/transactionservice/transaction/:id", transactionHandler.CreateTransactionWithID)
 	v1.GET("/transactionservice/transaction/:id", transactionHandler.GetTransactionByID)
 	v1.GET("/transactionservice/types/:type", transactionHandler.GetTransactionIDsByType)
+	v1.GET("/transactionservice/sum/:id", transactionHandler.GetTransactionCumulativeAmount)
 }

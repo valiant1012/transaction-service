@@ -11,7 +11,7 @@ type TransactionRequest struct {
 	ID       int64   `json:"-"`
 	Amount   float64 `json:"amount"`
 	Type     string  `json:"type"`
-	ParentId int64   `json:"parent_id"`
+	ParentId *int64  `json:"parent_id,omitempty"`
 }
 
 func (t *TransactionRequest) Validate() error {
@@ -47,4 +47,13 @@ func GetTransactionByType(ctx context.Context, transactionType string) ([]int64,
 	}
 
 	return transactionIDs, nil
+}
+
+func GetCumulativeSumByParentID(ctx context.Context, parentID int64) (float64, error) {
+	sum, err := postgres.GetTransactionSum(ctx, parentID)
+	if err != nil {
+		return 0, errors.Wrap(err, "get transactions")
+	}
+
+	return sum, nil
 }
