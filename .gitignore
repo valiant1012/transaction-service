@@ -1,0 +1,4 @@
+cloud/
+logs/
+.idea/
+go.sum
