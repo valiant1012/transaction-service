@@ -15,6 +15,9 @@ type TransactionRequestBody struct {
 }
 
 func (t *TransactionRequestBody) Validate() error {
+	if t.Amount <= 0 {
+		return errors.New("invalid amount")
+	}
 	if t.Type == "" {
 		return errors.New("missing transaction type")
 	}

@@ -2,13 +2,15 @@ package main
 
 import (
 	"flag"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/valiant1012/transaction-service/src/config"
 	"github.com/valiant1012/transaction-service/src/constants"
 	"github.com/valiant1012/transaction-service/src/models/postgres"
 	"github.com/valiant1012/transaction-service/src/server/middlewares"
-	"github.com/valiant1012/transaction-service/src/server/routers"
+	"github.com/valiant1012/transaction-service/src/server/router"
+	"github.com/valiant1012/transaction-service/src/utility/logger"
 )
 
 func main() {
@@ -24,8 +26,14 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Init Logger
+	err := logger.Init(config.GetServerLogFilePath())
+	if err != nil {
+		panic(errors.Wrap(err, "init logger"))
+	}
+
 	// Init Services
-	err := initServices()
+	err = initServices()
 	if err != nil {
 		panic(errors.Wrap(err, "init services"))
 	}
@@ -38,7 +46,7 @@ func main() {
 	engine.Use(middlewares.CORSMiddleware())
 
 	// Add Routes
-	routers.AddRoutes(engine)
+	router.AddRoutes(engine)
 
 	// Run gin engine
 	if err = engine.Run(config.GetPort()); err != nil {
