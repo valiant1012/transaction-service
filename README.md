@@ -12,5 +12,5 @@ the following requirements:
 2. Run the server using `go run main.go` or build a binary using `go build -o transaction-service` and execute using `chmod +x transaction-service && ./transaction-service`
 3. Generate a JWT using the signing key added in the `env.json` field `jwt_signing_key`. Use this key as a Bearer token for all transaction routes.
 4. Create some dummy transactions using `PUT /transactionservice/transactions/:id` or `POST /transactionservice/transactions` route.
-5. You can fetch a transaction using `GET /transactionservice/transactions/:id` route or get transaction IDs matching a type using `PUT /transactionservice/types/:type` route.
+5. You can fetch a transaction using `GET /transactionservice/transactions/:id` route or get transaction IDs matching a type using `GET /transactionservice/types/:type` route.
 6. You can fetch the sum of all child transactions' amounts using the `PUT /transactionservice/sum/:parent-id` route.
